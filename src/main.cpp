@@ -26,7 +26,7 @@ When button is pressed:
 
 #include <Arduino.h> // Add the missing include directive
 
-#define TOUCH_THRESHOLD 50
+#define TOUCH_THRESHOLD 57
 
 RTC_DATA_ATTR int bootCount = 0;
 touch_pad_t touchPin;
@@ -123,6 +123,7 @@ void wakeup_and_measure() {
   while (true)
   {
     touchValue = touchRead(T3);
+    Serial.println("Touch Value: " + String(touchValue));
     if (touchValue > TOUCH_THRESHOLD) {
       break;
     }
