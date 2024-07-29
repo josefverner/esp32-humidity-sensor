@@ -26,7 +26,7 @@ When button is pressed:
 
 #include <Arduino.h> // Add the missing include directive
 
-#define TOUCH_THRESHOLD 57
+#define TOUCH_THRESHOLD 65 //57
 
 RTC_DATA_ATTR int bootCount = 0;
 touch_pad_t touchPin;
