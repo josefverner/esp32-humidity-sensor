@@ -23,25 +23,26 @@ const byte LED_10_PIN = 26;
 
 const uint8_t LEDC_TIMER_BIT = 12;
 const uint32_t LEDC_START_DUTY = 0;
-const uint32_t LEDC_TARGET_DUTY = 4094; // 2^LEDC_TIMER_BIT
+const uint32_t LEDC_TARGET_DUTY = 4094;  // 2^LEDC_TIMER_BIT
 const uint32_t LEDC_BASE_FREQ = 5000;
 const int LEDC_FADE_TIME = 740;
 
 const byte SWITCH_01_PIN = 32;
 const byte SWITCH_02_PIN = 33;
 
-const byte TOUCH_PIN_VALUE = 3; // Touch pin value of GPIO 15
+const byte TOUCH_PIN_VALUE = 3;  // Touch pin value of GPIO 15
+
+const byte ANALOG_READ_PIN = 13;
 
 const byte ledPins[] = {
-  LED_01_PIN,
-  LED_02_PIN,
-  LED_03_PIN,
-  LED_04_PIN,
-  LED_05_PIN,
-  LED_06_PIN,
-  LED_07_PIN,
-  LED_08_PIN,
-  LED_09_PIN,
-  LED_10_PIN
-};
+    LED_01_PIN,
+    LED_02_PIN,
+    LED_03_PIN,
+    LED_04_PIN,
+    LED_05_PIN,
+    LED_06_PIN,
+    LED_07_PIN,
+    LED_08_PIN,
+    LED_09_PIN,
+    LED_10_PIN};
 const byte LED_COUNT = sizeof(ledPins);

@@ -24,5 +24,7 @@ extern const byte SWITCH_02_PIN;
 
 extern const byte TOUCH_PIN_VALUE;
 
+extern const byte ANALOG_READ_PIN;
+
 extern const byte ledPins[];
 extern const byte LED_COUNT;

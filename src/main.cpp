@@ -1,13 +1,13 @@
-/*********************************************************************
-* Chip: ESP32-D0WDQ6 Rev 1                                           *
-* Cores: 2                                                           *
-* Chip ID: 13033968.                                                 *
-* GPIO pin is rated at 40mA                                          *
-* recommended 20mA per GPIO                                          *
-* max 250mA at all GPIOs.                                            *
-* Following GPIOs may be set HIGH or to PWM Signal at boot or reset: *
-* GPIO 0, GPIO 1, GPIO 3, GPIO 5, GPIO 6 - 11, GPIO 14, GPIO 15.     *
-*********************************************************************/
+/**********************************************************************
+ * Chip: ESP32-D0WDQ6 Rev 1                                           *
+ * Cores: 2                                                           *
+ * Chip ID: 13033968.                                                 *
+ * GPIO pin is rated at 40mA                                          *
+ * recommended 20mA per GPIO                                          *
+ * max 250mA at all GPIOs.                                            *
+ * Following GPIOs may be set HIGH or to PWM Signal at boot or reset: *
+ * GPIO 0, GPIO 1, GPIO 3, GPIO 5, GPIO 6 - 11, GPIO 14, GPIO 15.     *
+ **********************************************************************/
 
 /*
 Board goes to deep sleep.
@@ -20,25 +20,30 @@ When button is pressed:
 - board goes to deep sleep again
 */
 
+#include <Arduino.h>  // Add the missing include directive
+#include <esp32-hal-ledc.h>
 #include <humidity_variables.h>
 #include <utils.h>
-#include <esp32-hal-ledc.h>
 
-#include <Arduino.h> // Add the missing include directive
-
-#define TOUCH_THRESHOLD 65 //57
+// #define TOUCH_THRESHOLD 55  // 57 // 65
+#define TOUCH_THRESHOLD_MIN 0
+#define TOUCH_THRESHOLD_MAX 127
 
 RTC_DATA_ATTR int bootCount = 0;
 touch_pad_t touchPin;
 
-bool fadeEnded = false;      // status of LED fade
+bool fadeEnded = false;  // status of LED fade
 bool fadeAllowed = true;
 int touchValue = 0;
+
+int getTouchThreshold() {
+  long analogValue = analogRead(ANALOG_READ_PIN);
+  return fixedMap(analogValue, 0, 4095, TOUCH_THRESHOLD_MIN, TOUCH_THRESHOLD_MAX);
+}
 
 void ARDUINO_ISR_ATTR LED_FADE_ISR() {
   fadeEnded = true;
 }
-
 
 // put function declarations here:
 // int myFunction(int, int);
@@ -50,7 +55,8 @@ void setup() {
   // put your setup code here, to run once:
   // int result = myFunction(2, 3);
   Serial.begin(115200);
-  while(!Serial) delay(10);
+  while (!Serial)
+    delay(10);
 
   ++bootCount;
 
@@ -64,9 +70,11 @@ void setup() {
 
   wakeup_and_measure();
 
-  touchSleepWakeUpEnable(T3, TOUCH_THRESHOLD);
+  int touchTreshold = getTouchThreshold();
+  touchSleepWakeUpEnable(T3, touchTreshold);
 
   Serial.println("Going to sleep now");
+  Serial.println(getTouchThreshold());
   esp_deep_sleep_start();
 }
 
@@ -80,7 +88,7 @@ void loop() {
 // }
 void fade_in_leds(int activeLights) {
   for (byte i = 0; i < activeLights; i++) {
-    ledcFadeWithInterrupt(ledPins[i], LEDC_START_DUTY, LEDC_TARGET_DUTY, LEDC_FADE_TIME, LED_FADE_ISR); 
+    ledcFadeWithInterrupt(ledPins[i], LEDC_START_DUTY, LEDC_TARGET_DUTY, LEDC_FADE_TIME, LED_FADE_ISR);
   }
   delay(LEDC_FADE_TIME);
   delay(100);
@@ -88,7 +96,7 @@ void fade_in_leds(int activeLights) {
 
 void fade_out_leds(int activeLights) {
   for (byte i = 0; i < activeLights; i++) {
-    ledcFadeWithInterrupt(ledPins[i], LEDC_TARGET_DUTY, LEDC_START_DUTY, LEDC_FADE_TIME, LED_FADE_ISR); 
+    ledcFadeWithInterrupt(ledPins[i], LEDC_TARGET_DUTY, LEDC_START_DUTY, LEDC_FADE_TIME, LED_FADE_ISR);
   }
   delay(LEDC_FADE_TIME);
   delay(100);
@@ -100,8 +108,7 @@ void wakeup_and_measure() {
   touchPin = esp_sleep_get_touchpad_wakeup_status();
 
   Serial.println("Touch Pin: " + String(touchPin));
-  
-  
+
   int humidity = analogRead(HUMIDITY_SENSOR_PIN);
   Serial.print("Humidity: ");
   Serial.println(humidity);
@@ -109,7 +116,7 @@ void wakeup_and_measure() {
   int activeLights = fixedMap(humidity, 3500, 1500, 0, LED_COUNT);
 
   delay(100);
-  
+
   if (fadeAllowed) {
     Serial.println("LED Fade on started.");
     fadeAllowed = false;
@@ -120,15 +127,15 @@ void wakeup_and_measure() {
     fadeAllowed = true;
   }
 
-  while (true)
-  {
+  while (true) {
     touchValue = touchRead(T3);
-    Serial.println("Touch Value: " + String(touchValue));
-    if (touchValue > TOUCH_THRESHOLD) {
+    // Serial.println("Touch Value: " + String(touchValue));
+    int touchTreshold = getTouchThreshold();
+    if (touchValue > touchTreshold) {
       break;
     }
   }
-  
+
   Serial.println("LED Fade off started.");
   fade_out_leds(activeLights);
 }
